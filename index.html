@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Location</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px 20px;
+      background: #f5f5f5;
+    }
+
+    .box {
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    }
+
+    button {
+      padding: 14px 24px;
+      border: 0;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      word-break: break-word;
+    }
+
+    a {
+      color: #0066cc;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>📍 Share Your Location</h2>
+
+  <p>
+    This page will request your device's location.
+    Your browser will ask for permission before sharing it.
+  </p>
+
+  <button onclick="getLocation()">
+    Share My Location
+  </button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function getLocation() {
+
+  const result = document.getElementById("result");
+
+  if (!navigator.geolocation) {
+    result.innerHTML = "Location services are not supported by this browser.";
+    return;
+  }
+
+  result.innerHTML = "Requesting your location...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position) {
+
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy);
+
+      const mapLink =
+        `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+      result.innerHTML = `
+        <p><b>Location shared successfully.</b></p>
+        <p>Accuracy: approximately ${accuracy} meters</p>
+        <a href="${mapLink}" target="_blank">
+          Open location on Google Maps
+        </a>
+      `;
+    },
+
+    function(error) {
+
+      if (error.code === 1) {
+        result.innerHTML =
+          "Location permission was denied.";
+      } else {
+        result.innerHTML =
+          "Unable to get your location.";
+      }
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
+  );
+}
+</script>
+
+</body>
+</html>
