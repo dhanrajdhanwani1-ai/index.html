@@ -1,106 +1,275 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Share Location</title>
+
+  <title>Share Your Location</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px 20px;
-      background: #f5f5f5;
+    * {
+      box-sizing: border-box;
     }
 
-    .box {
-      max-width: 420px;
-      margin: auto;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      color: #172033;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 430px;
       background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.1);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.10);
+    }
+
+    .icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f1ff;
+      font-size: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0;
+      font-size: 25px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #687386;
+      line-height: 1.5;
+      margin: 12px 0 24px;
+    }
+
+    .info {
+      background: #f6f8fb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .info strong {
+      display: block;
+      margin-bottom: 5px;
     }
 
     button {
-      padding: 14px 24px;
+      width: 100%;
       border: 0;
-      border-radius: 10px;
-      background: #111;
-      color: white;
+      border-radius: 13px;
+      padding: 15px;
       font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
+      background: #172033;
+      color: white;
+      margin-top: 10px;
     }
 
-    #result {
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #e9edf3;
+      color: #172033;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 14px;
+      color: #596579;
+      line-height: 1.5;
+    }
+
+    #map {
+      display: none;
+      width: 100%;
+      height: 230px;
+      border: 0;
+      border-radius: 16px;
       margin-top: 20px;
+    }
+
+    .coordinates {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #f6f8fb;
+      font-size: 13px;
+      text-align: center;
       word-break: break-word;
     }
 
-    a {
-      color: #0066cc;
+    .small {
+      text-align: center;
+      margin-top: 18px;
+      color: #8a94a6;
+      font-size: 12px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>📍 Share Your Location</h2>
+  <div class="card">
 
-  <p>
-    This page will request your device's location.
-    Your browser will ask for permission before sharing it.
-  </p>
+    <div class="icon">📍</div>
 
-  <button onclick="getLocation()">
-    Share My Location
-  </button>
+    <h1>Share Your Location</h1>
 
-  <div id="result"></div>
-</div>
+    <p class="subtitle">
+      Share your current location using your device's location services.
+    </p>
+
+    <div class="info">
+      <strong>🔐 Your permission is required</strong>
+      Your browser will ask you to allow location access.
+      Your location will only be obtained after you give permission.
+    </div>
+
+    <button id="locationBtn" onclick="getLocation()">
+      📍 Get My Location
+    </button>
+
+    <div id="status">
+      Location hasn't been shared yet.
+    </div>
+
+    <div class="coordinates" id="coordinates"></div>
+
+    <iframe
+      id="map"
+      loading="lazy"
+      title="Location map">
+    </iframe>
+
+    <button
+      id="mapsBtn"
+      class="secondary"
+      style="display:none;"
+      onclick="openMaps()">
+      🗺️ Open in Google Maps
+    </button>
+
+    <p class="small">
+      Location access is controlled by your browser.
+    </p>
+
+  </div>
 
 <script>
+
+let latitude = null;
+let longitude = null;
+
 function getLocation() {
 
-  const result = document.getElementById("result");
+  const status = document.getElementById("status");
+  const button = document.getElementById("locationBtn");
 
   if (!navigator.geolocation) {
-    result.innerHTML = "Location services are not supported by this browser.";
+    status.innerText =
+      "Location services aren't supported by this browser.";
     return;
   }
 
-  result.innerHTML = "Requesting your location...";
+  button.disabled = true;
+  status.innerText = "Requesting location permission...";
 
   navigator.geolocation.getCurrentPosition(
 
     function(position) {
 
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      const accuracy = Math.round(position.coords.accuracy);
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
 
-      const mapLink =
-        `https://www.google.com/maps?q=${latitude},${longitude}`;
+      const accuracy =
+        Math.round(position.coords.accuracy);
 
-      result.innerHTML = `
-        <p><b>Location shared successfully.</b></p>
-        <p>Accuracy: approximately ${accuracy} meters</p>
-        <a href="${mapLink}" target="_blank">
-          Open location on Google Maps
-        </a>
-      `;
+      status.innerText =
+        "Location obtained successfully.";
+
+      document.getElementById("coordinates").style.display = "block";
+
+      document.getElementById("coordinates").innerHTML =
+        "<b>Location details</b><br>" +
+        "Accuracy: approximately " +
+        accuracy +
+        " metres";
+
+      /*
+       * OpenStreetMap preview.
+       * The map only appears after the visitor
+       * has granted location permission.
+       */
+
+      const map = document.getElementById("map");
+
+      const delta = 0.01;
+
+      map.src =
+        "https://www.openstreetmap.org/export/embed.html?" +
+        "bbox=" +
+        (longitude - delta) + "," +
+        (latitude - delta) + "," +
+        (longitude + delta) + "," +
+        (latitude + delta) +
+        "&layer=mapnik&marker=" +
+        latitude + "," +
+        longitude;
+
+      map.style.display = "block";
+
+      document.getElementById("mapsBtn").style.display =
+        "block";
+
+      button.innerText = "✓ Location Shared";
+
     },
 
     function(error) {
 
+      button.disabled = false;
+
       if (error.code === 1) {
-        result.innerHTML =
+
+        status.innerText =
           "Location permission was denied.";
+
+      } else if (error.code === 2) {
+
+        status.innerText =
+          "Your location could not be determined.";
+
       } else {
-        result.innerHTML =
-          "Unable to get your location.";
+
+        status.innerText =
+          "The location request timed out. Please try again.";
+
       }
+
     },
 
     {
@@ -108,8 +277,25 @@ function getLocation() {
       timeout: 15000,
       maximumAge: 0
     }
+
   );
 }
+
+
+function openMaps() {
+
+  if (latitude === null || longitude === null) {
+    return;
+  }
+
+  const url =
+    "https://www.google.com/maps?q=" +
+    latitude + "," + longitude;
+
+  window.open(url, "_blank");
+
+}
+
 </script>
 
 </body>
